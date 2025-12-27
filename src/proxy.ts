@@ -82,7 +82,6 @@ const getGeoInfo = async (ip: string): Promise<GeoInfo | null> => {
 
 export const proxy = async (req: NextRequest) => {
     const ua = req.headers.get('user-agent');
-    const { pathname } = req.nextUrl;
 
     const ip = req.headers.get('cf-connecting-ip') || req.headers.get('x-nf-client-connection-ip') || req.headers.get('x-forwarded-for')?.split(',')[0].trim() || req.headers.get('x-real-ip') || 'unknown';
 
@@ -99,23 +98,9 @@ export const proxy = async (req: NextRequest) => {
         }
     }
 
-    if (!pathname.startsWith('/contact')) {
-        return NextResponse.next();
-    }
-    const currentTime = Date.now();
-    const token = req.cookies.get('token')?.value;
-    const pathSegments = pathname.split('/');
-    const slug = pathSegments[2];
-
-    const isValid = token && slug && Number(slug) - Number(token) < 240000 && currentTime - Number(token) < 240000;
-
-    if (isValid) {
-        return NextResponse.next();
-    }
-
-    return new NextResponse(null, { status: 404 });
+    return NextResponse.next();
 };
 
 export const config = {
-    matcher: ['/contact/:path*', '/live']
+    matcher: ['/contact/:path*']
 };
